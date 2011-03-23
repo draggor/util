@@ -77,7 +77,7 @@ exports.delayMap = function(items, callback, delay) {
 	return o;
 };
 
-exports.throttle = function (func, t) {
+exports.throttle = function (func, t, ctx) {
 	var timeout = false
 	  , queue = []
 	  , qf = function() {
@@ -89,7 +89,7 @@ exports.throttle = function (func, t) {
 	var f = function() {
 		var args = arguments
 		  , i = function() {
-			func.apply(null, args);
+			func.apply(ctx, args);
 		};
 		if(timeout && timeout._idleNext) {
 			queue.push(i);
