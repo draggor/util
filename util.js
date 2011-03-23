@@ -77,7 +77,7 @@ exports.delayMap = function(items, callback, delay) {
 	return o;
 };
 
-function throttle(func, t) {
+exports.throttle = function (func, t) {
 	var timeout = false
 	  , queue = []
 	  , qf = function() {
