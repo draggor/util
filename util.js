@@ -184,6 +184,11 @@ exports.burstThrottle = function (func, b, bt, t, ctx) {
 	return f;
 }
 
+/**
+ * This will call fn up until you hit a number of invocations equal
+ * to count, as long as it's within the span specified by time.  Entries
+ * will roll off, as the time of the history is checked with each invocaiton.
+ */
 exports.capacityThrottle = function (fn, count, time) {
 	var timeout = false
 	  , queue = []
