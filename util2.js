@@ -76,29 +76,18 @@ exports.safeRandomize = function(list) {
 	return exports.randomize(list.concat([]));
 };
 
-/*
- * Apply callback to each item in items, setting a timeout of delay milliseconds
- * after each execution.  A callback that takes a while to run will add to the time
- * before the next invocation.
- */
-exports.delayMap = function(items, callback, delay, last) {
+exports.delayMap = function(items, callback, delay) {
 	var o = {};
 	var i = 0;
 	var f = function() {
 		if(i < items.length) {
 			callback(items[i++]);
 			return o.id = setTimeout(f, delay);
-		} else if(i >= items.length && last) {
-			last();
 		}
 	};
 	o.id = f();
 	return o;
 };
-
-/*
-exports.delayMap([1,2,3,4,5,6], console.log, 1000);
-*/
 
 /*
  * Limit the execution of a function to once during a set interval,
@@ -116,9 +105,8 @@ exports.throttle = function (func, t, ctx) {
 	
 	var f = function() {
 		var args = arguments
-		  , self = this
 		  , i = function() {
-			func.apply(self, args);
+			func.apply(ctx, args);
 		};
 		if(timeout && timeout._idleNext) {
 			queue.push(i);
@@ -159,9 +147,8 @@ exports.burstThrottle = function (func, b, bt, t, ctx) {
 	
 	var f = function() {
 		var args = arguments
-		  , self = this
 		  , i = function() {
-			func.apply(self, args);
+			func.apply(ctx, args);
 		};
 		if(timeout && timeout._idleNext) {
 			queue.push(i);
@@ -175,6 +162,7 @@ exports.burstThrottle = function (func, b, bt, t, ctx) {
 			if(!bTimeout) {
 				bTimeout = setTimeout(function() {
 					burst = 0;
+					bTimeout = false;
 				}, bt);
 			}
 		}
@@ -184,99 +172,7 @@ exports.burstThrottle = function (func, b, bt, t, ctx) {
 	return f;
 }
 
-exports.capacityThrottle = function (fn, count, time) {
-	var timeout = false
-	  , queue = []
-	  , history = []
-	  , qf = function() {
-		  history = [];
-		  while(history.length < count && queue.length > 0) {
-		  	var q = queue.shift()
-			  , now = Date.now()
-			  ;
-			history.push(now);
-			q();
-		  }
-		  if(queue.length > 0) {
-			  timeout = setTimeout(qf, time);
-		  }
-	  }
-	  ;
-
-	var f = function() {
-		var args = arguments
-		  , self = this
-		  , now = Date.now()
-		  , i = function() {
-			  fn.apply(self, args);
-		  }
-		  ;
-		if(timeout && timeout._idleNext) {
-			queue.push(i);
-		} else {
-			history.push(now);
-			for(var idx = 0; idx < history.length; idx++) {
-				if(now - history[idx] >= time) {
-					history.shift();
-				} else {
-					break;
-				}
-			}
-			if(history.length > count) {
-				var elapsed = now - history[history.length - 2];
-				timeout = setTimeout(qf, time - elapsed);
-				queue.push(i);
-			} else {
-				i();
-			}
-		}
-		return timeout;
-	};
-
-	return f;
-}
-
 /*
-var f = exports.capacityThrottle(function(num) {
-	console.log(num);
-}, 5, 1000);
-
-for(var i = 0; i < 20; i++) {
-	f(i);
-}
-*/
-
-/*
-function O1() {
-	this.c = exports.getUniqueId();
-}
-
-O1.prototype.p = function() {
-	console.log(this.c);
-};
-
-function O2() {
-	this.o = new O1();
-	this.p = exports.burstThrottle(O2.prototype.pnt, 3, 1000, 2000);
-}
-
-O2.prototype.pnt = function() {
-	this.o.p();
-};
-
-var o = new O2();
-
-o.p();
-o.p();
-o.p();
-o.p();
-o.p();
-o.p();
-o.p();
-o.p();
-o.p();
-o.p();
-
 var l = exports.burstThrottle(function(a, b) { console.log([a, b]); }, 3, 1000, 2000);
 
 l('a', 1);
@@ -285,7 +181,14 @@ l('c', 3);
 l('d', 4);
 l('e', 5);
 l('f', 6);
-setTimeout(function(){l('g', 7);}, 2000);
+setTimeout(function(){
+	l('g', 7);
+	l('h', 8);
+	l('i', 9);
+	l('j', 10);
+	l('k', 11);
+	l('l', 12);
+}, 12000);
 */
 
 exports.split = function(str, separator, limit) {
